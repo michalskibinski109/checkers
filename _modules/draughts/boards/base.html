@@ -1,0 +1,539 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>draughts.boards.base &mdash; py-draughts  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            py-draughts
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../base.html">Base Board</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../move.html">Move object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../standard.html">Standard (International) draughts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../american.html">American checkers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../frisian.html">Frisian draughts</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">py-draughts</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">draughts.boards.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for draughts.boards.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractproperty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">FIGURE_REPR</span><span class="p">,</span> <span class="n">Color</span><span class="p">,</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">SquareT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.move</span><span class="w"> </span><span class="kn">import</span> <span class="n">Move</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">logger</span><span class="p">,</span>
+    <span class="n">get_diagonal_moves</span><span class="p">,</span>
+    <span class="n">get_short_diagonal_moves</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># fmt: off</span>
+<span class="n">SQUARES</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">B8</span><span class="p">,</span> <span class="n">D8</span><span class="p">,</span> <span class="n">F8</span><span class="p">,</span> <span class="n">H8</span><span class="p">,</span>
+        <span class="n">A7</span><span class="p">,</span> <span class="n">C7</span><span class="p">,</span> <span class="n">E7</span><span class="p">,</span> <span class="n">G7</span><span class="p">,</span>
+        <span class="n">B6</span><span class="p">,</span> <span class="n">D6</span><span class="p">,</span> <span class="n">F6</span><span class="p">,</span> <span class="n">H6</span><span class="p">,</span>
+        <span class="n">A5</span><span class="p">,</span> <span class="n">C5</span><span class="p">,</span> <span class="n">E5</span><span class="p">,</span> <span class="n">G5</span><span class="p">,</span>
+        <span class="n">B4</span><span class="p">,</span> <span class="n">D4</span><span class="p">,</span> <span class="n">F4</span><span class="p">,</span> <span class="n">H4</span><span class="p">,</span>
+        <span class="n">A3</span><span class="p">,</span> <span class="n">C3</span><span class="p">,</span> <span class="n">E3</span><span class="p">,</span> <span class="n">G3</span><span class="p">,</span>
+        <span class="n">B2</span><span class="p">,</span> <span class="n">D2</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">H2</span><span class="p">,</span>
+        <span class="n">A1</span><span class="p">,</span> <span class="n">C1</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">G1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">)</span>
+<span class="c1"># fmt: on</span>
+
+
+<div class="viewcode-block" id="BaseBoard">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseBoard</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstact class for all draughts variants.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        All boards contain all methods from this class.</span>
+
+<span class="sd">    Class is designed to support draughts boards of any size.</span>
+<span class="sd">    By specifying the starting position, the user can create a board of any size.</span>
+
+
+
+<span class="sd">    To create new variants of draughts, inherit from this class and:</span>
+
+<span class="sd">    - override the ``legal_moves`` property</span>
+<span class="sd">    - (optional) override the ``SQUARES`` list to match the new board size if you want to use UCI notation: ``[A1, B1, C1, ...]``</span>
+<span class="sd">    - override the ``STARTING_POSITION`` to specify the starting position</span>
+<span class="sd">    - override the ``STARTING_COLOR`` to specify the starting color</span>
+
+<span class="sd">    Constraints:</span>
+<span class="sd">    - There are only two colors:</span>
+<span class="sd">        - ``Color.WHITE``</span>
+<span class="sd">        - ``Color.BLACK``</span>
+
+<span class="sd">    - There are only two types of pieces:</span>
+<span class="sd">        - ``PieceType.MAN``</span>
+<span class="sd">        - ``PieceType.KING``</span>
+<span class="sd">    - **Board should always be square.**</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        For generating legal moves use</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">halfmove_clock</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of half-moves since the last capture or pawn move.&quot;&quot;&quot;</span>
+
+    <span class="n">GAME_TYPE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PDN game type. See `PDN specification &lt;https://en.wikipedia.org/wiki/Portable_Draughts_Notation&gt;`_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">VARIANT_NAME</span> <span class="o">=</span> <span class="s2">&quot;Abstract variant&quot;</span>
+    <span class="n">STARTING_POSITION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">+</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="n">ROW_IDX</span> <span class="o">=</span> <span class="o">...</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Dictionary of row indexes for every square. Generated only on module import. </span>
+<span class="sd">    Used to calculate legal moves.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">COL_IDX</span> <span class="o">=</span> <span class="o">...</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Same as ``ROW_IDX`` but for columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">STARTING_COLOR</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Starting color. ``Color.WHITE`` or ``Color.BLACK``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DIAGONAL_LONG_MOVES</span> <span class="o">=</span> <span class="o">...</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dictionary of pseudo-legal moves for king pieces. Generated only on module import.</span>
+<span class="sd">    This dictionary contains all possible moves for king piece (as if there were no other pieces on the board).</span>
+<span class="sd">    </span>
+<span class="sd">    **Structure:**</span>
+<span class="sd">    ``[(right-up moves), (left-up moves), (right-down moves), (left-down moves)]``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DIAGONAL_SHORT_MOVES</span> <span class="o">=</span> <span class="o">...</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Same as ``DIAGONAL_LONG_MOVES`` but contains only first 2 squares of the move.</span>
+<span class="sd">    (one for move and one for capture)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">parent_class</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">parent_class_vars</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">parent_class</span><span class="p">)</span>
+        <span class="n">child_class_vars</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_value</span> <span class="ow">in</span> <span class="n">child_class_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">parent_class_vars</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">var_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">parent_class</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_value</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">DIAGONAL_SHORT_MOVES</span> <span class="o">=</span> <span class="n">get_diagonal_moves</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="p">))</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">DIAGONAL_LONG_MOVES</span> <span class="o">=</span> <span class="n">get_short_diagonal_moves</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">starting_position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">turn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the board with a starting position.</span>
+<span class="sd">        The starting position must be a numpy array of length n * n/2,</span>
+<span class="sd">        where n is the size of the board.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">starting_position</span>
+            <span class="k">if</span> <span class="n">starting_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">turn</span> <span class="k">if</span> <span class="n">turn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">STARTING_COLOR</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">size</span><span class="o">**</span><span class="mi">2</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid board with shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> provided.</span><span class="se">\</span>
+<span class="s2">                Please use an array with lenght = (n * n/2). </span><span class="se">\</span>
+<span class="s2">                Where n is an size of the board.&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Move</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Board initialized with shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># @abstractmethod</span>
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">legal_moves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Move</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return list legal moves for the current position.</span>
+<span class="sd">        *For every concrete variant of draughts this method should be overriden.*</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            Depending of implementation method can return generator or list.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns board position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_threefold_repetition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">square_list</span>
+                <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">square_list</span>
+                <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">square_list</span>
+            <span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">game_over</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns ``True`` if the game is over.&quot;&quot;&quot;</span>
+        <span class="c1"># check if threefold repetition</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_draw</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">))</span>
+
+<div class="viewcode-block" id="BaseBoard.push">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard.push">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">move</span><span class="p">:</span> <span class="n">Move</span><span class="p">,</span> <span class="n">is_finished</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a move to the board.</span>
+<span class="sd">        Automatically promotes a piece if it reaches the last row.</span>
+
+<span class="sd">        If ``is_finished`` is set to ``True``, the turn is switched. This parameter is used only</span>
+<span class="sd">        for generating legal moves.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">move</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span>  <span class="c1"># Before move occurs</span>
+        <span class="n">src</span><span class="p">,</span> <span class="n">tg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">move</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">move</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">src</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">src</span><span class="p">]</span>
+        <span class="c1"># is promotion</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">tg</span> <span class="o">//</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">==</span> <span class="n">Figure</span><span class="o">.</span><span class="n">WHITE_MAN</span><span class="o">.</span><span class="n">value</span>
+            <span class="ow">and</span> <span class="n">is_finished</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">tg</span> <span class="o">//</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">==</span> <span class="n">Figure</span><span class="o">.</span><span class="n">BLACK_MAN</span><span class="o">.</span><span class="n">value</span>
+            <span class="ow">and</span> <span class="n">is_finished</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">*=</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">move</span><span class="o">.</span><span class="n">is_promotion</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">])</span> <span class="o">==</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">move</span><span class="o">.</span><span class="n">captured_list</span>
+            <span class="ow">and</span> <span class="n">is_finished</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">is_finished</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">move</span><span class="o">.</span><span class="n">captured_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sq</span> <span class="k">for</span> <span class="n">sq</span> <span class="ow">in</span> <span class="n">move</span><span class="o">.</span><span class="n">captured_list</span> <span class="k">if</span> <span class="n">sq</span> <span class="o">!=</span> <span class="n">tg</span><span class="p">])</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">Figure</span><span class="o">.</span><span class="n">EMPTY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_finished</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">==</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span> <span class="k">else</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span></div>
+
+
+<div class="viewcode-block" id="BaseBoard.pop">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard.pop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_finished</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pops a move from the board.</span>
+
+<span class="sd">        If ``is_finished`` is set to ``True``, the turn is switched. This parameter is used only</span>
+<span class="sd">        for generating legal moves.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">move</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">src</span><span class="p">,</span> <span class="n">tg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">move</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">move</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">move</span><span class="o">.</span><span class="n">is_promotion</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">//=</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">src</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">tg</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">src</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">=</span> <span class="n">move</span><span class="o">.</span><span class="n">halfmove_clock</span>
+        <span class="k">for</span> <span class="n">sq</span><span class="p">,</span> <span class="n">entity</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">move</span><span class="o">.</span><span class="n">captured_list</span><span class="p">,</span> <span class="n">move</span><span class="o">.</span><span class="n">captured_entities</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">sq</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span>  <span class="c1"># Dangerous line</span>
+        <span class="k">if</span> <span class="n">is_finished</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">==</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span> <span class="k">else</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span>
+        <span class="k">return</span> <span class="n">move</span></div>
+
+
+<div class="viewcode-block" id="BaseBoard.push_uci">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard.push_uci">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push_uci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">str_move</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to push a move from a string.</span>
+
+<span class="sd">        * Converts string to ``Move`` object</span>
+<span class="sd">        * calls ``BaseBoard.push`` method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">move</span> <span class="o">=</span> <span class="n">Move</span><span class="o">.</span><span class="n">from_uci</span><span class="p">(</span><span class="n">str_move</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">move</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a FEN string of the board position.</span>
+
+<span class="sd">        ``[FEN &quot;[Turn]:[Color 1][K][Square number][,]...]:[Color 2][K][Square number][,]...]&quot;]``</span>
+
+<span class="sd">        Fen examples:</span>
+
+<span class="sd">        - ``[FEN &quot;B:W18,24,27,28,K10,K15:B12,16,20,K22,K25,K29&quot;]``</span>
+<span class="sd">        - ``[FEN &quot;B:W18,19,21,23,24,26,29,30,31,32:B1,2,3,4,6,7,9,10,11,12&quot;]``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">COLORS_REPR</span> <span class="o">=</span> <span class="p">{</span><span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span><span class="p">:</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span><span class="p">:</span> <span class="s2">&quot;B&quot;</span><span class="p">}</span>
+        <span class="n">fen_components</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s1">&#39;[FEN &quot;W:</span><span class="si">{</span><span class="n">COLORS_REPR</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">turn</span><span class="p">]</span><span class="si">}</span><span class="s1">:W&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;K&quot;</span> <span class="o">*</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">sq</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sq</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sq</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;:B&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;K&quot;</span> <span class="o">*</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">sq</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sq</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sq</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="s1">&#39;&quot;]&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fen_components</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseBoard.from_fen">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard.from_fen">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_fen</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fen</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseBoard</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a board from a FEN string by using regular expressions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initializing board from FEN: </span><span class="si">{</span><span class="n">fen</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fen</span> <span class="o">=</span> <span class="n">fen</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="n">re_turn</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[WB]:&quot;</span><span class="p">)</span>
+        <span class="n">re_premove</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(G[0-9]+|P[0-9]+)(,|)&quot;</span><span class="p">)</span>
+        <span class="n">re_prefix</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[WB]:[WB]:[WB]&quot;</span><span class="p">)</span>
+        <span class="n">re_white</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;W[0-9K,]+&quot;</span><span class="p">)</span>
+        <span class="n">re_black</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;B[0-9K,]+&quot;</span><span class="p">)</span>
+        <span class="c1"># remove premoves from fen</span>
+        <span class="c1"># remove first 2 letters from prefix</span>
+        <span class="n">fen</span> <span class="o">=</span> <span class="n">re_premove</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">fen</span><span class="p">)</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">re_prefix</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prefix</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">fen</span> <span class="o">=</span> <span class="n">fen</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">turn</span> <span class="o">=</span> <span class="n">re_turn</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">white</span> <span class="o">=</span> <span class="n">re_white</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">black</span> <span class="o">=</span> <span class="n">re_black</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid FEN: </span><span class="si">{</span><span class="n">fen</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;turn: </span><span class="si">{</span><span class="n">turn</span><span class="si">}</span><span class="s2">, white: </span><span class="si">{</span><span class="n">white</span><span class="si">}</span><span class="s2">, black: </span><span class="si">{</span><span class="n">black</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">turn</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">white</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">black</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid FEN: </span><span class="si">{</span><span class="n">fen</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__populate_from_list</span><span class="p">(</span><span class="n">white</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">),</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__populate_from_list</span><span class="p">(</span><span class="n">black</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">),</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid FEN: </span><span class="si">{</span><span class="n">fen</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">turn</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span> <span class="k">if</span> <span class="n">turn</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span> <span class="k">else</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="p">,</span> <span class="n">turn</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__populate_from_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fen_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">color</span><span class="p">:</span> <span class="n">Color</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">board_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sq</span> <span class="ow">in</span> <span class="n">fen_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sq</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">sq</span><span class="p">)</span> <span class="ow">in</span> <span class="n">board_range</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">sq</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">elif</span> <span class="n">sq</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;K&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sq</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">sq</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="ow">in</span> <span class="n">board_range</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">sq</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;invalid square value: </span><span class="si">{</span><span class="n">sq</span><span class="si">}</span><span class="s2"> for board with length</span><span class="se">\</span>
+<span class="s2">                        </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">STARTING_POSITION</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;1/2-1/2&quot;</span><span class="p">,</span> <span class="s2">&quot;1-0&quot;</span><span class="p">,</span> <span class="s2">&quot;0-1&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a result of the game.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_draw</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;1/2-1/2&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">==</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_over</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;0-1&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">==</span> <span class="n">Color</span><span class="o">.</span><span class="n">BLACK</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_over</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;1-0&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;-&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">friendly_form</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a board position in a friendly form.</span>
+<span class="sd">        *Makes board with size n x n from a board with size n x n/2*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_pos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">sq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">):</span>
+            <span class="n">new_pos</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">idx</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">new_pos</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">idx</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">new_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sq</span><span class="p">)</span>
+        <span class="n">new_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_pos</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pdn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a PDN string that represents the game.</span>
+<span class="sd">        pdn - Portable Draughts Notation</span>
+<span class="sd">        Example:</span>
+<span class="sd">            ```</span>
+<span class="sd">            [GameType &quot;20&quot;]</span>
+<span class="sd">            [Variant &quot;Standard (international) checkers&quot;]</span>
+<span class="sd">            [Result &quot;-&quot;]</span>
+<span class="sd">            1. 34-29 17-21 2. 33-28 12-17 3. 38-33 21-26</span>
+<span class="sd">            4. 29-24 20x27 5. 31x22 18x27</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;[GameType &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">GAME_TYPE</span><span class="si">}</span><span class="s1">&quot;]</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;[Variant &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIANT_NAME</span><span class="si">}</span><span class="s1">&quot;]</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;[Result &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="si">}</span><span class="s1">&quot;]</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (number, white, black)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">move</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_moves_stack</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="n">idx</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">move</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">move</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">data</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">)</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="BaseBoard.is_capture">
+<a class="viewcode-back" href="../../../base.html#draughts.boards.base.BaseBoard.is_capture">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_capture</span><span class="p">(</span><span class="n">move</span><span class="p">:</span> <span class="n">Move</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if a move is a capture.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">move</span><span class="o">.</span><span class="n">captured_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">board</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">friendly_form</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="c1"># board += f&quot;{&#39;-&#39; * (self.shape[0]*4 + 1) }\n|&quot;</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">board</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">FIGURE_REPR</span><span class="p">[</span><span class="n">position</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">]]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">board</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">board</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Figure</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">sq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">SquareT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Michal Skibinski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

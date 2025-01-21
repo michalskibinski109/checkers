@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>draughts.boards.frisian &mdash; py-draughts  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            py-draughts
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../base.html">Base Board</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../move.html">Move object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../standard.html">Standard (International) draughts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../american.html">American checkers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../frisian.html">Frisian draughts</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">py-draughts</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">draughts.boards.frisian</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for draughts.boards.frisian</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.boards.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseBoard</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">Figure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.move</span><span class="w"> </span><span class="kn">import</span> <span class="n">Move</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_short_vertical_and_horizontal_moves</span><span class="p">,</span>
+    <span class="n">get_vertical_and_horizontal_moves</span><span class="p">,</span>
+    <span class="n">logger</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># fmt: off</span>
+<span class="n">SQUARES</span><span class="o">=</span>  <span class="p">[</span> <span class="n">B10</span><span class="p">,</span> <span class="n">D10</span><span class="p">,</span> <span class="n">F10</span><span class="p">,</span> <span class="n">H10</span><span class="p">,</span> <span class="n">J10</span><span class="p">,</span>
+            <span class="n">A9</span><span class="p">,</span> <span class="n">C9</span><span class="p">,</span> <span class="n">E9</span><span class="p">,</span> <span class="n">G9</span><span class="p">,</span> <span class="n">I9</span><span class="p">,</span>
+            <span class="n">B8</span><span class="p">,</span> <span class="n">D8</span><span class="p">,</span> <span class="n">F8</span><span class="p">,</span> <span class="n">H8</span><span class="p">,</span> <span class="n">J8</span><span class="p">,</span> 
+            <span class="n">A7</span><span class="p">,</span> <span class="n">C7</span><span class="p">,</span> <span class="n">E7</span><span class="p">,</span> <span class="n">G7</span><span class="p">,</span> <span class="n">I7</span><span class="p">,</span>
+            <span class="n">B6</span><span class="p">,</span> <span class="n">D6</span><span class="p">,</span> <span class="n">F6</span><span class="p">,</span> <span class="n">H6</span><span class="p">,</span> <span class="n">J6</span><span class="p">,</span>
+            <span class="n">A5</span><span class="p">,</span> <span class="n">C5</span><span class="p">,</span> <span class="n">E5</span><span class="p">,</span> <span class="n">G5</span><span class="p">,</span> <span class="n">I5</span><span class="p">,</span>
+            <span class="n">B4</span><span class="p">,</span> <span class="n">D4</span><span class="p">,</span> <span class="n">F4</span><span class="p">,</span> <span class="n">H4</span><span class="p">,</span> <span class="n">J4</span><span class="p">,</span>
+            <span class="n">A3</span><span class="p">,</span> <span class="n">C3</span><span class="p">,</span> <span class="n">E3</span><span class="p">,</span> <span class="n">G3</span><span class="p">,</span> <span class="n">I3</span><span class="p">,</span>
+            <span class="n">B2</span><span class="p">,</span> <span class="n">D2</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">H2</span><span class="p">,</span> <span class="n">J2</span><span class="p">,</span>
+            <span class="n">A1</span><span class="p">,</span> <span class="n">C1</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">I1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+<span class="c1"># fmt: on</span>
+
+
+<div class="viewcode-block" id="Board">
+<a class="viewcode-back" href="../../../frisian.html#draughts.boards.frisian.Board">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Board</span><span class="p">(</span><span class="n">BaseBoard</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Board for Frisian draughts.**</span>
+
+<span class="sd">    Game rules:</span>
+
+<span class="sd">    - Board size: 10x10</span>
+
+<span class="sd">    - Besides capturing diagonally, one can also capture horizontally and vertically.</span>
+<span class="sd">        Every piece can thus capture in eight directions</span>
+
+<span class="sd">    - If a king and a man can play a capture sequence of equal value,</span>
+<span class="sd">        it is always forced to play with the king.</span>
+
+<span class="sd">    - If a player has one or more kings on the board but also has one or more men left,</span>
+<span class="sd">        it is not allowed to play more than three non-capturing moves in a row with the same king.</span>
+<span class="sd">        If no capture is available for a king after its third non-capturing move,</span>
+<span class="sd">        one is forced to play with a different king or a man.</span>
+<span class="sd">        After that one can play any move with that king again,</span>
+<span class="sd">        but of course again only three times in a row if it doesn&#39;t capture.</span>
+<span class="sd">        This rule does not apply for a player that has no more men left (only kings on the board).</span>
+
+<span class="sd">    **Winning and drawing**</span>
+
+<span class="sd">    - When one player has two kings and the other player has one king,</span>
+<span class="sd">        the game is drawn after both players made 7 moves.</span>
+<span class="sd">    - When both players have one king left, the game is drawn after both players made 2 moves.</span>
+<span class="sd">        The official rules state that the game is drawn immediately when two kings are left</span>
+<span class="sd">        unless either player can win by force (which means the other king can be captured immediately</span>
+<span class="sd">        or will necessarily be captured next move). As we currently can&#39;t distinguish the positions</span>
+<span class="sd">        that win by force on lidraughts, this rule is implemented by always allowing 2 more moves to win the game.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">GAME_TYPE</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">STARTING_POSITION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="n">STARTING_COLOR</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">WHITE</span>
+
+    <span class="n">ROW_IDX</span> <span class="o">=</span> <span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="n">val</span> <span class="o">//</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">STARTING_POSITION</span><span class="p">))}</span>
+    <span class="n">COL_IDX</span> <span class="o">=</span> <span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="n">val</span> <span class="o">%</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">STARTING_POSITION</span><span class="p">))}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_threefold_repetition</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_5_moves_rule</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_16_moves_rule</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_25_moves_rule</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_25_moves_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;25 moves rule&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        <span class="c1"># return self.halfmove_clock &gt;= 50</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_16_moves_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">&lt;</span> <span class="mi">32</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">!=</span> <span class="n">Figure</span><span class="o">.</span><span class="n">EMPTY</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">Figure</span><span class="o">.</span><span class="n">MAN</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;16 moves rule&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_5_moves_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># if count of pieces is not 3 or 4</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">!=</span> <span class="n">Figure</span><span class="o">.</span><span class="n">EMPTY</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">Figure</span><span class="o">.</span><span class="n">KING</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">Figure</span><span class="o">.</span><span class="n">MAN</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;5 moves rule&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">legal_moves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Move</span><span class="p">]:</span>
+        <span class="n">all_moves</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">is_capture_mandatory</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">squares_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">square</span> <span class="ow">in</span> <span class="n">squares_list</span><span class="o">.</span><span class="n">flatten</span><span class="p">():</span>
+            <span class="n">moves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_legal_moves_from</span><span class="p">(</span><span class="n">square</span><span class="p">,</span> <span class="n">is_capture_mandatory</span><span class="p">)</span>
+            <span class="n">all_moves</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">moves</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">all_moves</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_legal_moves_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_capture_mandatory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Move</span><span class="p">]:</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="n">square</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span> <span class="o">==</span> <span class="n">Figure</span><span class="o">.</span><span class="n">MAN</span><span class="p">:</span>
+            <span class="n">moves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_man_legal_moves_from</span><span class="p">(</span><span class="n">square</span><span class="p">,</span> <span class="n">is_capture_mandatory</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">moves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_king_legal_moves_from</span><span class="p">(</span><span class="n">square</span><span class="p">,</span> <span class="n">is_capture_mandatory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_capture_mandatory</span><span class="p">:</span>
+            <span class="n">moves</span> <span class="o">=</span> <span class="p">[</span><span class="n">move</span> <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="n">moves</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">move</span><span class="o">.</span><span class="n">captured_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">moves</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_man_legal_moves_from</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_captrue_mandatory</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Move</span><span class="p">]:</span>
+        <span class="c1"># legal_moves  = self.DIAGONAL_SHORT_MOVES +</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_king_legal_moves_from</span><span class="p">(</span>
+        <span class="n">square</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_captrue_mandatory</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Move</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">board</span> <span class="o">=</span> <span class="n">Board</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Michal Skibinski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

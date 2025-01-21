@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base Board &mdash; py-draughts  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Move object" href="move.html" />
+    <link rel="prev" title="py-draughts" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            py-draughts
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Base Board</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#draughts.boards.base.BaseBoard"><code class="docutils literal notranslate"><span class="pre">BaseBoard</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.halfmove_clock"><code class="docutils literal notranslate"><span class="pre">BaseBoard.halfmove_clock</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.GAME_TYPE"><code class="docutils literal notranslate"><span class="pre">BaseBoard.GAME_TYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.ROW_IDX"><code class="docutils literal notranslate"><span class="pre">BaseBoard.ROW_IDX</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.COL_IDX"><code class="docutils literal notranslate"><span class="pre">BaseBoard.COL_IDX</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.STARTING_COLOR"><code class="docutils literal notranslate"><span class="pre">BaseBoard.STARTING_COLOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.DIAGONAL_LONG_MOVES"><code class="docutils literal notranslate"><span class="pre">BaseBoard.DIAGONAL_LONG_MOVES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.DIAGONAL_SHORT_MOVES"><code class="docutils literal notranslate"><span class="pre">BaseBoard.DIAGONAL_SHORT_MOVES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.position"><code class="docutils literal notranslate"><span class="pre">BaseBoard.position</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.game_over"><code class="docutils literal notranslate"><span class="pre">BaseBoard.game_over</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.push"><code class="docutils literal notranslate"><span class="pre">BaseBoard.push()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.pop"><code class="docutils literal notranslate"><span class="pre">BaseBoard.pop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.push_uci"><code class="docutils literal notranslate"><span class="pre">BaseBoard.push_uci()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.fen"><code class="docutils literal notranslate"><span class="pre">BaseBoard.fen</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.from_fen"><code class="docutils literal notranslate"><span class="pre">BaseBoard.from_fen()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.result"><code class="docutils literal notranslate"><span class="pre">BaseBoard.result</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.friendly_form"><code class="docutils literal notranslate"><span class="pre">BaseBoard.friendly_form</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.pdn"><code class="docutils literal notranslate"><span class="pre">BaseBoard.pdn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draughts.boards.base.BaseBoard.is_capture"><code class="docutils literal notranslate"><span class="pre">BaseBoard.is_capture()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="move.html">Move object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="standard.html">Standard (International) draughts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="american.html">American checkers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frisian.html">Frisian draughts</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">py-draughts</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Base Board</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="base-board">
+<h1>Base Board<a class="headerlink" href="#base-board" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">draughts.boards.base.</span></span><span class="sig-name descname"><span class="pre">BaseBoard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Color</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard" title="Link to this definition"></a></dt>
+<dd><p>Abstact class for all draughts variants.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>All boards contain all methods from this class.</p>
+</div>
+<p>Class is designed to support draughts boards of any size.
+By specifying the starting position, the user can create a board of any size.</p>
+<p>To create new variants of draughts, inherit from this class and:</p>
+<ul class="simple">
+<li><p>override the <code class="docutils literal notranslate"><span class="pre">legal_moves</span></code> property</p></li>
+<li><p>(optional) override the <code class="docutils literal notranslate"><span class="pre">SQUARES</span></code> list to match the new board size if you want to use UCI notation: <code class="docutils literal notranslate"><span class="pre">[A1,</span> <span class="pre">B1,</span> <span class="pre">C1,</span> <span class="pre">...]</span></code></p></li>
+<li><p>override the <code class="docutils literal notranslate"><span class="pre">STARTING_POSITION</span></code> to specify the starting position</p></li>
+<li><p>override the <code class="docutils literal notranslate"><span class="pre">STARTING_COLOR</span></code> to specify the starting color</p></li>
+</ul>
+<p>Constraints:
+- There are only two colors:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Color.WHITE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color.BLACK</span></code></p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>There are only two types of pieces:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">PieceType.MAN</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PieceType.KING</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><strong>Board should always be square.</strong></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For generating legal moves use</p>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.halfmove_clock">
+<span class="sig-name descname"><span class="pre">halfmove_clock</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.halfmove_clock" title="Link to this definition"></a></dt>
+<dd><p>The number of half-moves since the last capture or pawn move.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.GAME_TYPE">
+<span class="sig-name descname"><span class="pre">GAME_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">23</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.GAME_TYPE" title="Link to this definition"></a></dt>
+<dd><p>PDN game type. See <a class="reference external" href="https://en.wikipedia.org/wiki/Portable_Draughts_Notation">PDN specification</a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.ROW_IDX">
+<span class="sig-name descname"><span class="pre">ROW_IDX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{0:</span> <span class="pre">0,</span> <span class="pre">1:</span> <span class="pre">0,</span> <span class="pre">2:</span> <span class="pre">0,</span> <span class="pre">3:</span> <span class="pre">0,</span> <span class="pre">4:</span> <span class="pre">1,</span> <span class="pre">5:</span> <span class="pre">1,</span> <span class="pre">6:</span> <span class="pre">1,</span> <span class="pre">7:</span> <span class="pre">1,</span> <span class="pre">8:</span> <span class="pre">2,</span> <span class="pre">9:</span> <span class="pre">2,</span> <span class="pre">10:</span> <span class="pre">2,</span> <span class="pre">11:</span> <span class="pre">2,</span> <span class="pre">12:</span> <span class="pre">3,</span> <span class="pre">13:</span> <span class="pre">3,</span> <span class="pre">14:</span> <span class="pre">3,</span> <span class="pre">15:</span> <span class="pre">3,</span> <span class="pre">16:</span> <span class="pre">4,</span> <span class="pre">17:</span> <span class="pre">4,</span> <span class="pre">18:</span> <span class="pre">4,</span> <span class="pre">19:</span> <span class="pre">4,</span> <span class="pre">20:</span> <span class="pre">5,</span> <span class="pre">21:</span> <span class="pre">5,</span> <span class="pre">22:</span> <span class="pre">5,</span> <span class="pre">23:</span> <span class="pre">5,</span> <span class="pre">24:</span> <span class="pre">6,</span> <span class="pre">25:</span> <span class="pre">6,</span> <span class="pre">26:</span> <span class="pre">6,</span> <span class="pre">27:</span> <span class="pre">6,</span> <span class="pre">28:</span> <span class="pre">7,</span> <span class="pre">29:</span> <span class="pre">7,</span> <span class="pre">30:</span> <span class="pre">7,</span> <span class="pre">31:</span> <span class="pre">7}</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.ROW_IDX" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of row indexes for every square. Generated only on module import. 
+Used to calculate legal moves.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.COL_IDX">
+<span class="sig-name descname"><span class="pre">COL_IDX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{0:</span> <span class="pre">0,</span> <span class="pre">1:</span> <span class="pre">1,</span> <span class="pre">2:</span> <span class="pre">2,</span> <span class="pre">3:</span> <span class="pre">3,</span> <span class="pre">4:</span> <span class="pre">4,</span> <span class="pre">5:</span> <span class="pre">5,</span> <span class="pre">6:</span> <span class="pre">6,</span> <span class="pre">7:</span> <span class="pre">7,</span> <span class="pre">8:</span> <span class="pre">0,</span> <span class="pre">9:</span> <span class="pre">1,</span> <span class="pre">10:</span> <span class="pre">2,</span> <span class="pre">11:</span> <span class="pre">3,</span> <span class="pre">12:</span> <span class="pre">4,</span> <span class="pre">13:</span> <span class="pre">5,</span> <span class="pre">14:</span> <span class="pre">6,</span> <span class="pre">15:</span> <span class="pre">7,</span> <span class="pre">16:</span> <span class="pre">0,</span> <span class="pre">17:</span> <span class="pre">1,</span> <span class="pre">18:</span> <span class="pre">2,</span> <span class="pre">19:</span> <span class="pre">3,</span> <span class="pre">20:</span> <span class="pre">4,</span> <span class="pre">21:</span> <span class="pre">5,</span> <span class="pre">22:</span> <span class="pre">6,</span> <span class="pre">23:</span> <span class="pre">7,</span> <span class="pre">24:</span> <span class="pre">0,</span> <span class="pre">25:</span> <span class="pre">1,</span> <span class="pre">26:</span> <span class="pre">2,</span> <span class="pre">27:</span> <span class="pre">3,</span> <span class="pre">28:</span> <span class="pre">4,</span> <span class="pre">29:</span> <span class="pre">5,</span> <span class="pre">30:</span> <span class="pre">6,</span> <span class="pre">31:</span> <span class="pre">7}</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.COL_IDX" title="Link to this definition"></a></dt>
+<dd><p>Same as <code class="docutils literal notranslate"><span class="pre">ROW_IDX</span></code> but for columns.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.STARTING_COLOR">
+<span class="sig-name descname"><span class="pre">STARTING_COLOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.STARTING_COLOR" title="Link to this definition"></a></dt>
+<dd><p>Starting color. <code class="docutils literal notranslate"><span class="pre">Color.WHITE</span></code> or <code class="docutils literal notranslate"><span class="pre">Color.BLACK</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.DIAGONAL_LONG_MOVES">
+<span class="sig-name descname"><span class="pre">DIAGONAL_LONG_MOVES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Ellipsis</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.DIAGONAL_LONG_MOVES" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of pseudo-legal moves for king pieces. Generated only on module import.
+This dictionary contains all possible moves for king piece (as if there were no other pieces on the board).</p>
+<p><strong>Structure:</strong>
+<code class="docutils literal notranslate"><span class="pre">[(right-up</span> <span class="pre">moves),</span> <span class="pre">(left-up</span> <span class="pre">moves),</span> <span class="pre">(right-down</span> <span class="pre">moves),</span> <span class="pre">(left-down</span> <span class="pre">moves)]</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.DIAGONAL_SHORT_MOVES">
+<span class="sig-name descname"><span class="pre">DIAGONAL_SHORT_MOVES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Ellipsis</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.DIAGONAL_SHORT_MOVES" title="Link to this definition"></a></dt>
+<dd><p>Same as <code class="docutils literal notranslate"><span class="pre">DIAGONAL_LONG_MOVES</span></code> but contains only first 2 squares of the move.
+(one for move and one for capture)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.position" title="Link to this definition"></a></dt>
+<dd><p>Returns board position.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.game_over">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">game_over</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.game_over" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the game is over.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="move.html#draughts.move.Move" title="draughts.move.Move"><span class="pre">Move</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_finished</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard.push" title="Link to this definition"></a></dt>
+<dd><p>Pushes a move to the board.
+Automatically promotes a piece if it reaches the last row.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">is_finished</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the turn is switched. This parameter is used only
+for generating legal moves.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_finished</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard.pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard.pop" title="Link to this definition"></a></dt>
+<dd><p>Pops a move from the board.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">is_finished</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the turn is switched. This parameter is used only
+for generating legal moves.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.push_uci">
+<span class="sig-name descname"><span class="pre">push_uci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_move</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard.push_uci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard.push_uci" title="Link to this definition"></a></dt>
+<dd><p>Allows to push a move from a string.</p>
+<ul class="simple">
+<li><p>Converts string to <code class="docutils literal notranslate"><span class="pre">Move</span></code> object</p></li>
+<li><p>calls <code class="docutils literal notranslate"><span class="pre">BaseBoard.push</span></code> method</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.fen">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fen</span></span><a class="headerlink" href="#draughts.boards.base.BaseBoard.fen" title="Link to this definition"></a></dt>
+<dd><p>Returns a FEN string of the board position.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[FEN</span> <span class="pre">&quot;[Turn]:[Color</span> <span class="pre">1][K][Square</span> <span class="pre">number][,]...]:[Color</span> <span class="pre">2][K][Square</span> <span class="pre">number][,]...]&quot;]</span></code></p>
+<p>Fen examples:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[FEN</span> <span class="pre">&quot;B:W18,24,27,28,K10,K15:B12,16,20,K22,K25,K29&quot;]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[FEN</span> <span class="pre">&quot;B:W18,19,21,23,24,26,29,30,31,32:B1,2,3,4,6,7,9,10,11,12&quot;]</span></code></p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.from_fen">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_fen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#draughts.boards.base.BaseBoard" title="draughts.boards.base.BaseBoard"><span class="pre">BaseBoard</span></a></span></span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard.from_fen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard.from_fen" title="Link to this definition"></a></dt>
+<dd><p>Creates a board from a FEN string by using regular expressions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.result">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">result</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'1/2-1/2'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'1-0'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'0-1'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'-'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.result" title="Link to this definition"></a></dt>
+<dd><p>Returns a result of the game.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.friendly_form">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">friendly_form</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.friendly_form" title="Link to this definition"></a></dt>
+<dd><p>Returns a board position in a friendly form.
+<em>Makes board with size n x n from a board with size n x n/2</em></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.pdn">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pdn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#draughts.boards.base.BaseBoard.pdn" title="Link to this definition"></a></dt>
+<dd><p>Returns a PDN string that represents the game.
+pdn - Portable Draughts Notation
+Example:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">[GameType</span> <span class="pre">&quot;20&quot;]</span>
+<span class="pre">[Variant</span> <span class="pre">&quot;Standard</span> <span class="pre">(international)</span> <span class="pre">checkers&quot;]</span>
+<span class="pre">[Result</span> <span class="pre">&quot;-&quot;]</span>
+<span class="pre">1.</span> <span class="pre">34-29</span> <span class="pre">17-21</span> <span class="pre">2.</span> <span class="pre">33-28</span> <span class="pre">12-17</span> <span class="pre">3.</span> <span class="pre">38-33</span> <span class="pre">21-26</span>
+<span class="pre">4.</span> <span class="pre">29-24</span> <span class="pre">20x27</span> <span class="pre">5.</span> <span class="pre">31x22</span> <span class="pre">18x27</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="draughts.boards.base.BaseBoard.is_capture">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_capture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="move.html#draughts.move.Move" title="draughts.move.Move"><span class="pre">Move</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/draughts/boards/base.html#BaseBoard.is_capture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#draughts.boards.base.BaseBoard.is_capture" title="Link to this definition"></a></dt>
+<dd><p>Checks if a move is a capture.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="py-draughts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="move.html" class="btn btn-neutral float-right" title="Move object" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Michal Skibinski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

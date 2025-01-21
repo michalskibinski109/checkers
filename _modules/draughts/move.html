@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>draughts.move &mdash; py-draughts  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            py-draughts
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../base.html">Base Board</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../move.html">Move object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../standard.html">Standard (International) draughts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../american.html">American checkers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../frisian.html">Frisian draughts</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">py-draughts</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">draughts.move</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for draughts.move</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">draughts.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+
+
+<div class="viewcode-block" id="Move">
+<a class="viewcode-back" href="../../move.html#draughts.move.Move">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Move</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Move representation.</span>
+<span class="sd">    End user should never interact with this class directly.</span>
+
+<span class="sd">    As we can read on wikipedia:</span>
+
+<span class="sd">    *Multiple jumps, such as a double or triple jump,</span>
+<span class="sd">    require you to pay attention, as the convention is</span>
+<span class="sd">    to just show the start and end squares and not the</span>
+<span class="sd">    in-between or intermediate squares. So the notation</span>
+<span class="sd">    1-3 would mean a King does a double jump from 1 to 10 to 3.</span>
+<span class="sd">    The intermediate square is only shown if there are two ways</span>
+<span class="sd">    to jump and it would not be clear otherwise.*</span>
+
+<span class="sd">    Note that always:</span>
+<span class="sd">    n - number of visited squares (include source square)</span>
+<span class="sd">    n - 2 - number of captured pieces</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">visited_squares</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">captured_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">captured_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">is_promotion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span> <span class="o">=</span> <span class="n">visited_squares</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">captured_list</span> <span class="o">=</span> <span class="n">captured_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">captured_entities</span> <span class="o">=</span> <span class="n">captured_entities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_promotion</span> <span class="o">=</span> <span class="n">is_promotion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halfmove_clock</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">separator</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">captured_list</span> <span class="k">else</span> <span class="s2">&quot;-&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}{</span><span class="n">separator</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">visited_squares</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Move: </span><span class="si">{</span><span class="s1">&#39;-&gt;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">visited_squares</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if two moves are equal. move created from string will have only visited squares definied.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Move</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">longer</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">)</span>
+                <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span>
+            <span class="p">)</span>
+            <span class="n">shorter</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">)</span>
+                <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">square</span> <span class="ow">in</span> <span class="n">longer</span> <span class="k">for</span> <span class="n">square</span> <span class="ow">in</span> <span class="n">shorter</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">captured_list</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Move</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Move</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append moves&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot append moves </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2">. Last square of first move should be equal to first square of second move.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Move</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">square_list</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">square_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">captured_list</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">captured_list</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">captured_entities</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">captured_entities</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_promotion</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Move.from_uci">
+<a class="viewcode-back" href="../../move.html#draughts.move.Move.from_uci">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_uci</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">move</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">legal_moves</span><span class="p">:</span> <span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Move</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Converts string representation of move to ``Move`` object.</span>
+<span class="sd">        This is generic method, so it can be used for any board size. Therefore,</span>
+<span class="sd">        For different context different move object will be generated.</span>
+<span class="sd">        Also we need to pass legal moves, to understand given move and check if it is legal.</span>
+
+
+<span class="sd">        input format:</span>
+
+<span class="sd">        * ``&lt;square_number&gt;-&lt;square_number&gt;`` for simple move</span>
+<span class="sd">        * ``&lt;square_number&gt;x&lt;square_number&gt;`` for capture</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        * ``24-19`` - means from 24 to 19</span>
+<span class="sd">        * ``24x19`` - means from 24 to 16 means capture of piece between 24 and 16</span>
+<span class="sd">        * ``1x10x19`` - means capture of two pieces between 1 and 19</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">move</span> <span class="o">=</span> <span class="n">move</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;-&quot;</span> <span class="ow">in</span> <span class="n">move</span><span class="p">:</span>  <span class="c1"># classic move</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">move</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">move</span><span class="p">:</span>  <span class="c1"># this means capture</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">move</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid move </span><span class="si">{</span><span class="n">move</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">move_obj</span> <span class="o">=</span> <span class="n">Move</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">legal_move</span> <span class="ow">in</span> <span class="n">legal_moves</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">legal_move</span> <span class="o">==</span> <span class="n">move_obj</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">legal_move</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">move_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> is correct, but not legal in given position.</span><span class="se">\n</span><span class="s2"> Legal moves are: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">legal_moves</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Michal Skibinski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
